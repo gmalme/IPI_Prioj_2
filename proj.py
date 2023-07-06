@@ -2,7 +2,7 @@ from src.MathMorphology import MathMorphology
 
 # _____________ Questao 01 _____________
 math = MathMorphology()
-math.q2()
+math.q1()
 
 
 
