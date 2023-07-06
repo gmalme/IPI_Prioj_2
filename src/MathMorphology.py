@@ -97,34 +97,31 @@ class MathMorphology:
         cv2.imshow("01 - binarizacao",thresh)
         cv2.imwrite("output/q3/01_binarizacao.jpg",thresh)
 
-        # preenche a imagem
+        # Preenche a imagem
         imgFill = self.fill(thresh)
         cv2.imshow("02 - Imagem preenchida",255 - imgFill)
         cv2.imwrite("output/q3/02_preenchimento.jpg",imgFill)
 
-
         scruct_element = np.ones((3,3),np.uint8)
         back = cv2.dilate(imgFill,scruct_element,iterations=3)
-        # cv2.imshow("bakc",back)
 
+        # Calcula a funcao de distnacia
         dist = cv2.distanceTransform(imgFill,cv2.DIST_L2,3)
         cv2.imshow("03 - funcao de distancia",dist)
         cv2.imwrite("output/q3/03_distancia.jpg",dist)
 
         _,fg = cv2.threshold(dist,0.1*dist.max(),255,0)
         fg = np.uint8(fg)
-        # cv2.imshow("fg",fg)
-
         unk = cv2.subtract(back,fg)
-        # cv2.imshow("unk",unk)
-
+ 
+        # Realiza a segmentação watersheed
         _,markers = cv2.connectedComponents(fg)
         markers +=1
         markers [unk==255]=0
         markers = watershed(image_ini,markers)
         image_ini[markers == -1] = [255,0,0]
         cv2.imshow("04 - resultado",image_ini)
-        cv2.imwrite("q3-3-final.jpg",image_ini)
+        cv2.imwrite("output/q3/04_resultado.jpg",image_ini)
 
         cv2.waitKey(0)
         cv2.destroyAllWindows()
