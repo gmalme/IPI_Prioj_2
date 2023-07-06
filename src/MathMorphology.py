@@ -21,7 +21,7 @@ class MathMorphology:
 
     def q1(self):
         image = cv2.imread("input/pcb.jpg",0)
-        cv2.imshow("0 - Imagem Original", image)
+        cv2.imshow("00 - Imagem Original", image)
 
         #  Limiariza a imagem
         _,image = cv2.threshold(image,0,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
@@ -29,58 +29,59 @@ class MathMorphology:
         # Realiza um fechamento
         struct_element = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(15,15))
         closing = cv2.morphologyEx(image,cv2.MORPH_CLOSE,struct_element,iterations=2)
-        cv2.imshow("1 - Imagem depois do fechamento",closing)
-        # cv2.imwrite("q1-1-fechamento.jpg",closing)
+        cv2.imshow("01 - fechamento",closing)
+        cv2.imwrite("output/q1/01_fechamento.jpg",closing)
 
         # Preenche a imagem
-        preenche = (255 * (ndimage.binary_fill_holes(closing))).astype(np.uint8)
-        cv2.imshow("2 - Imagem depois do preenchimento", preenche)
-        # cv2.imwrite("q1-2-preenchimento.jpg",preenche)
+        filled = (255 * (ndimage.binary_fill_holes(closing))).astype(np.uint8)
+        cv2.imshow("02 - preenchimento", filled)
+        cv2.imwrite("output/q1/02_preenchimento.jpg",filled)
 
-        diff = preenche - closing
-        cv2.imshow("3 - Imagem Final",diff)
-        # cv2.imwrite("q1-3-furos.jpg",diff)
+        diff = filled - closing
+        cv2.imshow("03 - Resultado",diff)
+        cv2.imwrite("output/q1/3-Resultado.jpg",diff)
 
-        furos,_=cv2.findContours(diff,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
-        print("Quantidade de furos:",len(furos))
+        hole,_=cv2.findContours(diff,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
+        print("Quantidade de buracos:",len(hole))
 
-        print("Diametro dos furos:")
-        for i in furos: print(np.sqrt(4*cv2.contourArea(i)/np.pi))
+        print("Diametro dos buracos:")
+        for i in hole: print(np.sqrt(4*cv2.contourArea(i)/np.pi))
 
         cv2.waitKey(0)
         cv2.destroyAllWindows()
 
     def q2(self):
         image = cv2.imread("input/morf_test.png",cv2.IMREAD_GRAYSCALE)
-        cv2.imshow("0 - Imagem Original", image)
+        cv2.imshow("00 - Imagem Original", image)
 
+        # destaca o fundo
         struct_element = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (9,9))
-        fundo = cv2.morphologyEx(image,cv2.MORPH_CLOSE,struct_element)
-        cv2.imshow("1 - Fundo imagem",fundo)
-        # cv2.imwrite("q2-1-fundo-cv.jpg",fundo)
-        plt.imshow(fundo,cmap='gray')
-        plt.show()
-        # plt.imsave("q2-1-fundo-plt.jpg",fundo,cmap='gray')
+        background = cv2.morphologyEx(image,cv2.MORPH_CLOSE,struct_element)
+        cv2.imshow("01 - Fundo",background)
+        plt.imsave("output/q2/01_fundo.jpg",background,cmap='gray')
 
-        removeFundo = fundo - image
-        cv2.imshow("2 - removendo fundo",removeFundo)
-        # cv2.imwrite("q2-2-removefundo.jpg",removeFundo)
+        # remove o fundo
+        remove_background = background - image
+        cv2.imshow("02 - removendo fundo",remove_background)
+        cv2.imwrite("output/q2/02_removefundo.jpg",remove_background)
 
+        # aplicando filtro antes da operação
         bhat = cv2.morphologyEx(image,cv2.MORPH_BLACKHAT,struct_element)
-        cv2.imshow("3 - aplicando black hat",bhat)
-        # cv2.imwrite("q2-3-blackhat.jpg",bhat)
+        cv2.imshow("03 - aplicando black hat",bhat)
+        cv2.imwrite("output/q2/03_blackhat.jpg",bhat) 
+
 
         _,bhat_thresh = cv2.threshold(bhat,0,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
         struct_element = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(1,1))
 
-        dilatado = cv2.dilate(bhat_thresh,struct_element)
-        erosao = cv2.erode(dilatado,struct_element)
-        fechamento = cv2.morphologyEx(erosao,cv2.MORPH_CLOSE,struct_element)
+        # aplicando operações morfologicas para melhorar o resultado
+        dilation = cv2.dilate(bhat_thresh,struct_element)
+        erosion = cv2.erode(dilation,struct_element)
+        closing = cv2.morphologyEx(erosion,cv2.MORPH_CLOSE,struct_element)
 
-        ruido = cv2.fastNlMeansDenoising(fechamento,None,10,7,40)
-        cv2.imshow("4 - ruido",255 - ruido)
-        # cv2.imwrite("q2-4-ruido.jpg",ruido)
-        # cv2.imwrite("q2-4-ruidoinv.jpg",255-ruido)
+        result = cv2.fastNlMeansDenoising(closing,None,10,7,40)
+        cv2.imshow("04 - resultdo",255 - result)
+        cv2.imwrite("output/q2/04_resultado.jpg",255-result)
 
         cv2.waitKey(0)
         cv2.destroyAllWindows()
@@ -88,26 +89,27 @@ class MathMorphology:
     def q3(self):
         image_ini = cv2.imread("input/img_cells.jpg")
         image = cv2.cvtColor(image_ini,cv2.COLOR_BGR2GRAY)
-        cv2.imshow("0 - Original",image_ini)
+        cv2.imshow("00 - Original",image_ini)
 
-        # realiza limiarização
+        # Binariza a imagem
         _, thresh = cv2.threshold(image,0,255,cv2.THRESH_BINARY+THRESH_OTSU)
-
         thresh = cv2.morphologyEx(thresh,cv2.MORPH_CLOSE,cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(3,3)),iterations=2)
-        cv2.imshow("1 - fechamento",thresh)
-        # cv2.imwrite("q3-1-fechamento.jpg",thresh)
+        cv2.imshow("01 - binarizacao",thresh)
+        cv2.imwrite("output/q3/01_binarizacao.jpg",thresh)
 
+        # preenche a imagem
         imgFill = self.fill(thresh)
-        cv2.imshow("2 - Imagem preenchida",255 - imgFill)
-        # cv2.imwrite("q3-2-preenchimento.jpg",imgFill)
+        cv2.imshow("02 - Imagem preenchida",255 - imgFill)
+        cv2.imwrite("output/q3/02_preenchimento.jpg",imgFill)
+
 
         scruct_element = np.ones((3,3),np.uint8)
-
         back = cv2.dilate(imgFill,scruct_element,iterations=3)
         # cv2.imshow("bakc",back)
 
         dist = cv2.distanceTransform(imgFill,cv2.DIST_L2,3)
-        # cv2.imshow("dist",dist)
+        cv2.imshow("03 - funcao de distancia",dist)
+        cv2.imwrite("output/q3/03_distancia.jpg",dist)
 
         _,fg = cv2.threshold(dist,0.1*dist.max(),255,0)
         fg = np.uint8(fg)
@@ -121,8 +123,8 @@ class MathMorphology:
         markers [unk==255]=0
         markers = watershed(image_ini,markers)
         image_ini[markers == -1] = [255,0,0]
-        cv2.imshow("3 - fim",image_ini)
-        # cv2.imwrite("q3-3-final.jpg",imageOri)
+        cv2.imshow("04 - resultado",image_ini)
+        cv2.imwrite("q3-3-final.jpg",image_ini)
 
         cv2.waitKey(0)
         cv2.destroyAllWindows()
