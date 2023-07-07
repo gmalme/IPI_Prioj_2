@@ -39,7 +39,7 @@ class MathMorphology:
 
         diff = filled - closing
         cv2.imshow("03 - Resultado",diff)
-        cv2.imwrite("output/q1/3-Resultado.jpg",diff)
+        cv2.imwrite("output/q1/03_Resultado.jpg",diff)
 
         hole,_=cv2.findContours(diff,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
         print("Quantidade de buracos:",len(hole))
@@ -71,14 +71,12 @@ class MathMorphology:
         cv2.imwrite("output/q2/03_blackhat.jpg",bhat) 
 
 
+        # aplicando operações morfologicas para melhorar o resultado
         _,bhat_thresh = cv2.threshold(bhat,0,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
         struct_element = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(1,1))
-
-        # aplicando operações morfologicas para melhorar o resultado
         dilation = cv2.dilate(bhat_thresh,struct_element)
         erosion = cv2.erode(dilation,struct_element)
         closing = cv2.morphologyEx(erosion,cv2.MORPH_CLOSE,struct_element)
-
         result = cv2.fastNlMeansDenoising(closing,None,10,7,40)
         cv2.imshow("04 - resultdo",255 - result)
         cv2.imwrite("output/q2/04_resultado.jpg",255-result)
